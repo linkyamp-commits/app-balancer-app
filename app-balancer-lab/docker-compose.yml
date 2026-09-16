@@ -1,0 +1,51 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: balancer-lab-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app1:
+    build: ./app
+    container_name: balancer-lab-app1
+    environment:
+      NODE_ID: "node-1"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+
+  app2:
+    build: ./app
+    container_name: balancer-lab-app2
+    environment:
+      NODE_ID: "node-2"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8002:8000"
+    restart: unless-stopped
+
+  app3:
+    build: ./app
+    container_name: balancer-lab-app3
+    environment:
+      NODE_ID: "node-3"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8003:8000"
+    restart: unless-stopped
